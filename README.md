@@ -60,3 +60,9 @@ From now on, each commit will be preceeded by automatic formatting and linting c
 This project is licensed under the MIT License,
 which means it is distributed as open source software.
 See the [LICENSE.md](LICENSE.md) file for details.
+
+# Documentation:
+
+For more information than fits in a README, see the [docs](docs) folder,
+or check out the same content on our
+[https://guysawesomepythontemplate.readthedocs.io/en/latest/index.html](readthedocs page).
