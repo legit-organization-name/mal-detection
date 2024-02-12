@@ -31,7 +31,7 @@ in the `models/base.py` file.
 
 In the .github/workflows folder, there is a file called `run-tests.yml` which sets up
 the automated tests on github actions. To enable use of the database,
-go in that file an uncomment the service that sets up the postgres database.
+go in that file and uncomment the service that sets up the postgres database.
 
 The `models` folder should have files for all the different classes that
 you'd like to be mapped unto the database tables using the `sqlalchemy` library.
@@ -65,4 +65,4 @@ See the [LICENSE.md](LICENSE.md) file for details.
 
 For more information than fits in a README, see the [docs](docs) folder,
 or check out the same content on our
-[https://guysawesomepythontemplate.readthedocs.io/en/latest/index.html](readthedocs page).
+[readthedocs page](https://guysawesomepythontemplate.readthedocs.io/en/latest/index.html).
