@@ -29,6 +29,10 @@ When running locally, you should set up a postgres server and have it listen on
 port 5432. You should also create a database with a new name and update that name 
 in the `models/base.py` file. 
 
+In the .github/workflows folder, there is a file called `run-tests.yml` which sets up
+the automated tests on github actions. To enable use of the database, 
+go in that file an uncomment the service that sets up the postgres database.
+
 The `models` folder should have files for all the different classes that 
 you'd like to be mapped unto the database tables using the `sqlalchemy` library.
 
