@@ -13,8 +13,4 @@ def data_dir():
 
 @pytest.fixture
 def example_json_data():
-    return {
-        "name": "John",
-        "age": 30,
-        "city": "New York"
-    }
+    return {"name": "John", "age": 30, "city": "New York"}

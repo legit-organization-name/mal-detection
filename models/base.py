@@ -15,7 +15,7 @@ CODE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 utcnow = func.timezone("UTC", func.current_timestamp())
 
-database_name = 'example_database'
+database_name = "example_database"
 
 _Session = None
 _engine = None
