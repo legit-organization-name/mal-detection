@@ -110,6 +110,7 @@ class WebhookIngester:
                 timestamp=self.timestamp,
                 name=name,
             )
+            print(f"Event: subject= {subject}, action= {action}, name= {name}, timestamp= {self.timestamp}")
 
         return self.event
 
