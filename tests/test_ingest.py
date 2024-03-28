@@ -9,16 +9,16 @@ from models.base import CODE_ROOT, SmartSession
 from models.event import Event, int_to_action, action_to_int, subject_to_int, int_to_subject
 from models.report import Report
 
-from src.ingest import process_webhook
+from src.ingest import WebhookIngester
 
 data_dir = os.path.join(CODE_ROOT, "data")
 
 
-def test_new_team():
+def test_new_team(ingester):
     with open(os.path.join(data_dir, "example_new_team.json")) as f:
         json_data = json.load(f)
 
-    ret = process_webhook(json_data, {"X-GitHub-Event": "team"})
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "team"})
     assert ret is None
 
     # check event is posted
@@ -38,7 +38,7 @@ def test_new_team():
     with open(os.path.join(data_dir, "example_new_team_bad.json")) as f:
         json_data = json.load(f)
 
-    ret = process_webhook(json_data, {"X-GitHub-Event": "team"})
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "team"})
     assert ret is not None
     assert isinstance(ret, Report)
     assert ret.content == "Team name starts with 'hacker'"
@@ -74,11 +74,11 @@ def test_new_team():
     assert report.content == "Team name starts with 'hacker'"
 
 
-def test_new_repo():
+def test_new_repo(ingester):
     with open(os.path.join(data_dir, "example_new_repo.json")) as f:
         json_data = json.load(f)
 
-    ret = process_webhook(json_data, {"X-GitHub-Event": "repository"})
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "repository"})
     assert ret is None
 
     # check event is posted
@@ -100,7 +100,7 @@ def test_new_repo():
     with open(os.path.join(data_dir, "example_delete_repo.json")) as f:
         json_data = json.load(f)
 
-    ret = process_webhook(json_data, {"X-GitHub-Event": "repository"})
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "repository"})
     assert ret is None
 
     # check event is posted
@@ -125,7 +125,7 @@ def test_new_repo():
 
     timestamp = datetime.datetime.strptime(json_data["repository"]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
     timestamp += datetime.timedelta(minutes=5)  # deletion 5 minutes after creation
-    ret = process_webhook(json_data, {"X-GitHub-Event": "repository"}, timestamp=timestamp)
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "repository"}, timestamp=timestamp)
     assert ret is not None
     assert isinstance(ret, Report)
     assert ret.content == "Repository deleted less than 10 minutes after creation!"  # TODO: parametrize 10 minutes
@@ -163,12 +163,12 @@ def test_new_repo():
     assert report.content == "Repository deleted less than 10 minutes after creation!"
 
 
-def test_push():
+def test_push(ingester):
     with open(os.path.join(data_dir, "example_new_commit.json")) as f:
         json_data = json.load(f)
 
     timestamp = datetime.datetime.strptime("2024-03-28T11:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
-    ret = process_webhook(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
     assert ret is None
 
     # check event is posted
@@ -189,7 +189,7 @@ def test_push():
 
     # now post the same data only with a bad timestamp (between 14:00 and 16:00 is illegal)
     timestamp = datetime.datetime.strptime("2024-03-28T15:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
-    ret = process_webhook(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
+    ret = ingester.ingest(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
     assert ret is not None
     assert isinstance(ret, Report)
     assert ret.content == "Push event timestamp is not within legal bounds"

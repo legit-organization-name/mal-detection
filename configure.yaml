@@ -1,0 +1,11 @@
+repository:
+  create-delete-time: 10
+
+push:
+  bad-time-start: 14
+  bad-time-end: 16
+
+team:
+  illegal-prefix: hacker
+  illegal-suffix: legit
+# add more parameters for other checks or configurations

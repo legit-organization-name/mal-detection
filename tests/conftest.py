@@ -1,7 +1,9 @@
 import os
 import pytest
 
+from src.ingest import WebhookIngester
+
 
 @pytest.fixture
-def example_json_data():
-    return {"name": "John", "age": 30, "city": "New York"}
+def ingester():
+    return WebhookIngester()
