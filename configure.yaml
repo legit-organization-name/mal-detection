@@ -5,7 +5,7 @@ repository:
 
 push:
   bad-time-start: 14
-  bad-time-end: 17
+  bad-time-end: 16
 
 team:
   illegal-prefix: hacker
