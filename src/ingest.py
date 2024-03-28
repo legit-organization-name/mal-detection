@@ -110,7 +110,8 @@ class WebhookIngester:
                 timestamp=self.timestamp,
                 name=name,
             )
-            print(f"Event: subject= {subject}, action= {action}, name= {name}, timestamp= {self.timestamp}")
+            if self.config.get("verbose", False):
+                print(f"Event: subject= {subject}, action= {action}, name= {name}, timestamp= {self.timestamp}")
 
         return self.event
 
