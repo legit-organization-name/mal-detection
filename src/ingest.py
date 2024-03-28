@@ -136,9 +136,9 @@ class WebhookIngester:
 
         This check flags push times between 14:00 and 16:00.
         """
-        if self.config.get("push", {}).get(
-            "bad-time-start"
-        ) <= self.event.timestamp.hour and self.event.timestamp.hour <= self.config.get("push", {}).get("bad-time-end"):
+        start_time = self.config.get("push", {}).get("bad-time-start", 14)
+        end_time = self.config.get("push", {}).get("bad-time-end", 16)
+        if start_time <= self.event.timestamp.hour <= end_time:
             self.bad_list.append("Push event timestamp is not within legal bounds")
 
     def check_team_creation(self, session=None):
