@@ -1,4 +1,4 @@
-verbose: true
+verbose: false
 
 repository:
   create-delete-time: 10
