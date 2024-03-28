@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route("/webhook", methods=["POST"])
 def respond():
     try:
-        report = process_webhook(request.json)
+        report = process_webhook(request.json, request.headers)
     except Exception as e:
         print(f"Error processing webhook: {traceback.format_exc()}")
         return Response(status=500)

@@ -1,7 +1,7 @@
 import datetime
 
 from models.base import SmartSession
-from models.event import Event
+from models.event import Event, subject_to_int, action_to_int
 from models.report import Report
 
 
@@ -9,7 +9,7 @@ from models.report import Report
 #  it is likely that we'd need asyncio because things like fetching past events from DB or getting
 #  content from github are I/O bound operations.
 #  on the other hand, if we need to do some heavy computation, we might want to use multiprocessing/multithreading.
-def process_webhook(data):
+def process_webhook(data, headers, timestamp=None):
     """
     This function processes the incoming webhook data and runs a series of tests on it. If any of the tests fail, it
     will return a report of the failed tests. If all the tests pass, it will return None.
@@ -18,6 +18,8 @@ def process_webhook(data):
     ----------
     data: dict
         The incoming webhook data.
+    headers: dict
+        The headers of the incoming webhook.
 
     Returns
     -------
@@ -31,16 +33,20 @@ def process_webhook(data):
         # TODO: if moving to asyncio, need to consider opening a session for each subroutine
 
         # check if the data is consistent with an event we can use, if not, return None
-        event = create_event(data)
+        event = create_event(data, headers, timestamp)
 
         if event is not None:
-            if event.subject == "commit":
-                check_push(data, bad_list, session)
+            # can add more checks here...
+            if event.subject == "push":
+                check_push(event, bad_list, session)
             if event.subject == "team":
-                check_team_creation(data, bad_list, session)
-            if event.subject == "repo":
-                check_repo_creation(data, bad_list, session)
-                check_repo_deletion(data, bad_list, session)
+                if event.action == "created":
+                    check_team_creation(event, bad_list, session)
+            if event.subject == "repository":
+                if event.action == "created":
+                    check_repo_creation(event, bad_list, session)
+                if event.action == "deleted":
+                    check_repo_deletion(event, bad_list, session)
 
             if len(bad_list) > 0:
                 report = create_report(bad_list, session)
@@ -52,37 +58,50 @@ def process_webhook(data):
     return report
 
 
-def check_push(data, bad_list, session=None):
-    """Check for push into one of the repositories.
+def create_event(data, headers, timestamp=None):
+    """Make a new Event object to log something that was reported via webhook.
+    Will parse the data to figure out if this is a type of event we can use.
 
-    This check flags push times between 14:00 and 16:00.
+    Parameters
+    ----------
+    data: dict
+        The incoming webhook data.
+    headers: dict
+        The headers of the incoming webhook.
+    timestamp: datetime.datetime, optional
+        The timestamp of the event, if None, will default to the current time.
+
+    Returns
+    -------
+    event: Event object
+        The event that was logged.
     """
-    pass
+    if timestamp is None:
+        timestamp = datetime.datetime.utcnow()  # default timestamp is when it was received
 
+    action = data.get("action", None)
 
-def check_team_creation(data, bad_list, session=None):
-    """Check if posting a new team.
+    subject = headers["X-GitHub-Event"]
+    if subject == "repository":
+        name = data["repository"]["name"]
+    elif subject == "team":
+        name = data["team"]["name"]
+    elif subject == "push":
+        name = data["head_commit"]["id"]
+        action = "created"
 
-    This check will flag any new teams with a name that starts with "hacker".
-    """
-    if data["team"]["name"].startswith("hacker"):
-        bad_list.append("Team name starts with 'hacker'")
+    if subject in subject_to_int and action in action_to_int:
+        event = Event(
+            subject=subject,
+            action=data.get("action", None),
+            timestamp=timestamp,
+            name=name,
+        )
+        event.data = data  # this is not stored in the database but is useful for checks
+    else:
+        event = None  # we don't know this type of event
 
-
-def check_repo_creation(data, bad_list, session=None):
-    """Checks to run when new repository is created.
-
-    This will not flag anything right now.
-    """
-    pass
-
-
-def check_repo_deletion(data, bad_list, session=None):
-    """Checks to run when a repository is deleted.
-
-    This will flag repos that were created less than 10 minutes ago.
-    """
-    pass
+    return event
 
 
 def create_report(bad_list, session=None):
@@ -103,36 +122,36 @@ def create_report(bad_list, session=None):
     return report
 
 
-def create_event(data):
-    """Make a new Event object to log something that was reported via webhook.
-    Will parse the data to figure out if this is a type of event we can use.
+def check_push(event, bad_list, session=None):
+    """Check for push into one of the repositories.
 
-    Parameters
-    ----------
-    data: dict
-        The incoming webhook data.
-
-    Returns
-    -------
-    event: Event object
-        The event that was logged.
+    This check flags push times between 14:00 and 16:00.
     """
-    now = datetime.datetime.utcnow()  # default timestamp is when it was received
-    # check if it is a team creation event
-    if data.get("action") == "created" and "team" in data:
-        event = Event(
-            subject="team",
-            action="create",
-            name=data["team"]["name"],
-            timestamp=now,  # no timing data on this event
-        )
-    # check if it is a repo creation event
+    pass
 
-    # check if it is a repo deletion event
 
-    # check if it is a commit push event
+def check_team_creation(event, bad_list, session=None):
+    """Check if posting a new team.
 
-    else:
-        event = None
+    This check will flag any new teams with a name that starts with "hacker".
+    """
+    if event.data["team"]["name"].startswith("hacker"):
+        bad_list.append("Team name starts with 'hacker'")
 
-    return event
+
+def check_repo_creation(event, bad_list, session=None):
+    """Checks to run when new repository is created.
+
+    This will not flag anything right now.
+    """
+    pass
+
+
+def check_repo_deletion(event, bad_list, session=None):
+    """Checks to run when a repository is deleted.
+
+    This will flag repos that were created less than 10 minutes ago.
+    """
+    created_timestamp = datetime.datetime.strptime(event.data["repository"]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+    if event.timestamp - created_timestamp < datetime.timedelta(minutes=10):
+        bad_list.append("Repository deleted less than 10 minutes after creation!")

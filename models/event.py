@@ -6,9 +6,9 @@ from models.base import Base, utcnow
 
 int_to_action = {
     0: "NULL",
-    1: "create",
-    2: "delete",
-    3: "update",
+    1: "created",
+    2: "deleted",
+    3: "updated",
     # add more here
 }
 
@@ -18,8 +18,8 @@ action_to_int = {v: k for k, v in int_to_action.items()}
 
 int_to_subject = {
     0: "NULL",
-    1: "repo",
-    2: "commit",
+    1: "repository",
+    2: "push",
     3: "team",
     4: "user",
     5: "issue",
@@ -65,7 +65,7 @@ class Event(Base):
         index=True,
         default=0,
         nullable=False,
-        doc="The subject of the post, e.g., repo, issue, teams, commit, etc. "
+        doc="The subject of the post, e.g., repository, issue, teams, commit, etc. "
         "Use the subject_to_int or int_to_subject to translate to a string",
     )
 
