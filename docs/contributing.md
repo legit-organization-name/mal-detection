@@ -1,3 +1,0 @@
-## Contributing to the project
-
-To be added...
