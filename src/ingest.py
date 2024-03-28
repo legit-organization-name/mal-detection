@@ -93,7 +93,7 @@ def create_event(data, headers, timestamp=None):
     if subject in subject_to_int and action in action_to_int:
         event = Event(
             subject=subject,
-            action=data.get("action", None),
+            action=action,
             timestamp=timestamp,
             name=name,
         )
@@ -127,7 +127,8 @@ def check_push(event, bad_list, session=None):
 
     This check flags push times between 14:00 and 16:00.
     """
-    pass
+    if 14 <= event.timestamp.hour < 16:
+        bad_list.append("Push event timestamp is not within legal bounds")
 
 
 def check_team_creation(event, bad_list, session=None):

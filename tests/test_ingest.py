@@ -161,3 +161,52 @@ def test_new_repo():
     assert report.created_at > now - datetime.timedelta(seconds=3)
     assert report.event_id == event.id
     assert report.content == "Repository deleted less than 10 minutes after creation!"
+
+
+def test_push():
+    with open(os.path.join(data_dir, "example_new_commit.json")) as f:
+        json_data = json.load(f)
+
+    timestamp = datetime.datetime.strptime("2024-03-28T11:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
+    ret = process_webhook(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
+    assert ret is None
+
+    # check event is posted
+    with SmartSession() as session:
+        event = session.scalars(
+            sa.select(Event).where(Event.action == "created", Event.subject == "push").order_by(Event.created_at.desc())
+        ).first()
+
+    now = datetime.datetime.utcnow()
+    assert event is not None
+    assert event.action == "created"
+    assert event.subject == "push"
+    assert event.name == "845e1d3c0ea006351c4ffc923d47ac1acf3a19b8"
+    assert event.created_at < now
+    assert event.created_at > now - datetime.timedelta(seconds=3)
+    assert event.timestamp == timestamp
+    assert len(event.reports) == 0
+
+    # now post the same data only with a bad timestamp (between 14:00 and 16:00 is illegal)
+    timestamp = datetime.datetime.strptime("2024-03-28T15:00:00Z", "%Y-%m-%dT%H:%M:%SZ")
+    ret = process_webhook(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
+    assert ret is not None
+    assert isinstance(ret, Report)
+    assert ret.content == "Push event timestamp is not within legal bounds"
+
+    # check event is posted
+    with SmartSession() as session:
+        event = session.scalars(
+            sa.select(Event).where(Event.action == "created", Event.subject == "push").order_by(Event.created_at.desc())
+        ).first()
+
+    now = datetime.datetime.utcnow()
+    assert event is not None
+    assert event.action == "created"
+    assert event.subject == "push"
+    assert event.name == "845e1d3c0ea006351c4ffc923d47ac1acf3a19b8"
+    assert event.created_at < now
+    assert event.created_at > now - datetime.timedelta(seconds=3)
+    assert event.timestamp == timestamp
+    assert len(event.reports) == 1
+    assert event.reports[0].content == "Push event timestamp is not within legal bounds"
