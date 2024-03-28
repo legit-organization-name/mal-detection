@@ -1,3 +1,4 @@
+import traceback
 from flask import Flask, request, Response
 
 from src.ingest import process_webhook
@@ -10,7 +11,7 @@ def respond():
     try:
         report = process_webhook(request.json)
     except Exception as e:
-        print(f"Error processing webhook: {e}")
+        print(f"Error processing webhook: {traceback.format_exc()}")
         return Response(status=500)
 
     if report is not None:

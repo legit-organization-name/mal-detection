@@ -1,4 +1,3 @@
-import json
 import datetime
 
 from models.base import SmartSession
@@ -10,23 +9,21 @@ from models.report import Report
 #  it is likely that we'd need asyncio because things like fetching past events from DB or getting
 #  content from github are I/O bound operations.
 #  on the other hand, if we need to do some heavy computation, we might want to use multiprocessing/multithreading.
-def process_webhook(json_data):
+def process_webhook(data):
     """
     This function processes the incoming webhook data and runs a series of tests on it. If any of the tests fail, it
     will return a report of the failed tests. If all the tests pass, it will return None.
 
     Parameters
     ----------
-    json_data: str
-        The incoming webhook data in JSON format.
+    data: dict
+        The incoming webhook data.
 
     Returns
     -------
     report: str
         A report of the failed tests, or None if all tests passed.
     """
-
-    data = json.loads(json_data)
     bad_list = []
     report = None  # the default is to return nothing
     # run all the tests one after the other (append to bad_list if there's a problem)
