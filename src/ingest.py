@@ -145,7 +145,7 @@ class WebhookIngester:
         end_time = datetime.datetime(time.year, time.month, time.day, end_time, 0, 0)
 
         if start_time <= self.event.timestamp <= end_time:
-            self.bad_list.append("Push event timestamp is not within legal bounds")
+            self.bad_list.append(f"Push event timestamp is not within legal bounds ({start_time} -> {end_time})")
 
     def check_team_creation(self, session=None):
         """Check if posting a new team.

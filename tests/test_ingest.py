@@ -192,7 +192,7 @@ def test_push(ingester):
     ret = ingester.ingest(json_data, {"X-GitHub-Event": "push"}, timestamp=timestamp)
     assert ret is not None
     assert isinstance(ret, Report)
-    assert ret.content == "Push event timestamp is not within legal bounds"
+    assert "Push event timestamp is not within legal bounds" in ret.content
 
     # check event is posted
     with SmartSession() as session:
@@ -209,4 +209,4 @@ def test_push(ingester):
     assert event.created_at > now - datetime.timedelta(seconds=3)
     assert event.timestamp == timestamp
     assert len(event.reports) == 1
-    assert event.reports[0].content == "Push event timestamp is not within legal bounds"
+    assert "Push event timestamp is not within legal bounds" in event.reports[0].content
