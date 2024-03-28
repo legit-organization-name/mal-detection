@@ -68,6 +68,8 @@ def check_team_creation(data, bad_list, session=None):
 
     This check will flag any new teams with a name that starts with "hacker".
     """
+    if data["team"]["name"].startswith("hacker"):
+        bad_list.append("Team name starts with 'hacker'")
 
 
 def check_repo_creation(data, bad_list, session=None):
@@ -87,16 +89,21 @@ def check_repo_deletion(data, bad_list, session=None):
 
 
 def create_report(bad_list, session=None):
-    """Create a Report object, and post it to the DB.
+    """Create a Report object to log the failed checks.
 
-    The report will have a list of bad things that happened, and the time they happened.
+    The report will have a ";"-separated list of bad things that happened.
 
     Returns
     -------
     report: Report object
         The report of the failed checks.
     """
-    pass
+    report = Report(
+        # content=json.dumps(bad_list),  # if we want to use dictionary instead of a list of strings
+        content="; ".join(bad_list),
+    )
+
+    return report
 
 
 def create_event(data):
