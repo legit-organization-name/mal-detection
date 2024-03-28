@@ -1,6 +1,9 @@
 import json
+import datetime
 
 from models.base import SmartSession
+from models.event import Event
+from models.report import Report
 
 
 # TODO: consider using asyncio or multiprocessing to allow this to run while returning a 200 status code
@@ -23,25 +26,33 @@ def process_webhook(json_data):
         A report of the failed tests, or None if all tests passed.
     """
 
-    data = json.load(json_data)
+    data = json.loads(json_data)
     bad_list = []
-
+    report = None  # the default is to return nothing
     # run all the tests one after the other (append to bad_list if there's a problem)
     with SmartSession() as session:
         # TODO: if moving to asyncio, need to consider opening a session for each subroutine
-        check_push(data, bad_list, session)
-        check_team_creation(data, bad_list, session)
-        check_repo_creation(data, bad_list, session)
-        check_repo_deletion(data, bad_list, session)
 
-        if len(bad_list) > 0:
-            report = create_report(bad_list, session)
-        else:
-            report = None
+        # check if the data is consistent with an event we can use, if not, return None
+        event = create_event(data)
 
-        create_event(data, report, session)  # post the event to the DB
+        if event is not None:
+            if event.subject == "commit":
+                check_push(data, bad_list, session)
+            if event.subject == "team":
+                check_team_creation(data, bad_list, session)
+            if event.subject == "repo":
+                check_repo_creation(data, bad_list, session)
+                check_repo_deletion(data, bad_list, session)
 
-    return report  # the default is to do nothing
+            if len(bad_list) > 0:
+                report = create_report(bad_list, session)
+                event.reports.append(report)
+
+            session.add(event)
+            session.commit()
+
+    return report
 
 
 def check_push(data, bad_list, session=None):
@@ -88,5 +99,36 @@ def create_report(bad_list, session=None):
     pass
 
 
-def create_event(data, report, session=None):
-    pass
+def create_event(data):
+    """Make a new Event object to log something that was reported via webhook.
+    Will parse the data to figure out if this is a type of event we can use.
+
+    Parameters
+    ----------
+    data: dict
+        The incoming webhook data.
+
+    Returns
+    -------
+    event: Event object
+        The event that was logged.
+    """
+    now = datetime.datetime.utcnow()  # default timestamp is when it was received
+    # check if it is a team creation event
+    if data.get("action") == "created" and "team" in data:
+        event = Event(
+            subject="team",
+            action="create",
+            name=data["team"]["name"],
+            timestamp=now,  # no timing data on this event
+        )
+    # check if it is a repo creation event
+
+    # check if it is a repo deletion event
+
+    # check if it is a commit push event
+
+    else:
+        event = None
+
+    return event

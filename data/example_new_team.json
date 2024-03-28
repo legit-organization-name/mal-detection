@@ -1,0 +1,52 @@
+{
+  "action": "created",
+  "team": {
+    "name": "testing-team-name",
+    "id": 9797128,
+    "node_id": "T_kwDOCdm4Cs4AlX4I",
+    "slug": "testing-team-name",
+    "description": "This is a test team",
+    "privacy": "closed",
+    "notification_setting": "notifications_enabled",
+    "url": "https://api.github.com/organizations/165263370/team/9797128",
+    "html_url": "https://github.com/orgs/legit-organization-name/teams/testing-team-name",
+    "members_url": "https://api.github.com/organizations/165263370/team/9797128/members{/member}",
+    "repositories_url": "https://api.github.com/organizations/165263370/team/9797128/repos",
+    "permission": "pull",
+    "parent": null
+  },
+  "organization": {
+    "login": "legit-organization-name",
+    "id": 165263370,
+    "node_id": "O_kgDOCdm4Cg",
+    "url": "https://api.github.com/orgs/legit-organization-name",
+    "repos_url": "https://api.github.com/orgs/legit-organization-name/repos",
+    "events_url": "https://api.github.com/orgs/legit-organization-name/events",
+    "hooks_url": "https://api.github.com/orgs/legit-organization-name/hooks",
+    "issues_url": "https://api.github.com/orgs/legit-organization-name/issues",
+    "members_url": "https://api.github.com/orgs/legit-organization-name/members{/member}",
+    "public_members_url": "https://api.github.com/orgs/legit-organization-name/public_members{/member}",
+    "avatar_url": "https://avatars.githubusercontent.com/u/165263370?v=4",
+    "description": null
+  },
+  "sender": {
+    "login": "guynir42",
+    "id": 37179063,
+    "node_id": "MDQ6VXNlcjM3MTc5MDYz",
+    "avatar_url": "https://avatars.githubusercontent.com/u/37179063?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/guynir42",
+    "html_url": "https://github.com/guynir42",
+    "followers_url": "https://api.github.com/users/guynir42/followers",
+    "following_url": "https://api.github.com/users/guynir42/following{/other_user}",
+    "gists_url": "https://api.github.com/users/guynir42/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/guynir42/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/guynir42/subscriptions",
+    "organizations_url": "https://api.github.com/users/guynir42/orgs",
+    "repos_url": "https://api.github.com/users/guynir42/repos",
+    "events_url": "https://api.github.com/users/guynir42/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/guynir42/received_events",
+    "type": "User",
+    "site_admin": false
+  }
+}

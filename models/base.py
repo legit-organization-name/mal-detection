@@ -1,7 +1,5 @@
 # This file contains the code needed to connect to the database.
 # It is used to define models for python classes mapped to database tables via SQLAlchemy.
-# If you are not using a database, you can ignore this file.
-
 import os.path
 
 import sqlalchemy as sa
@@ -13,9 +11,9 @@ from contextlib import contextmanager
 
 CODE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-utcnow = func.timezone("UTC", func.current_timestamp())
+utcnow = func.current_timestamp()
 
-database_name = "example_database"
+database_name = CODE_ROOT + "/data/database.db"
 
 _Session = None
 _engine = None
@@ -38,15 +36,12 @@ def Session():
     global _Session, _engine
 
     if _Session is None:
-        # TODO: user must create an empty database named <database_name> in postgresql
-        url = f"postgresql://postgres:postgres@localhost:5432/{database_name}"
-        _engine = sa.create_engine(url, future=True, poolclass=sa.pool.NullPool)
+
+        _engine = sa.create_engine(f"sqlite:///{database_name}", future=True, poolclass=sa.pool.NullPool)
 
         _Session = sessionmaker(bind=_engine, expire_on_commit=False)
 
-        if not database_exists(_engine.url):
-            create_database(_engine.url)
-            Base.metadata.create_all(_engine)
+        Base.metadata.create_all(_engine)
 
     session = _Session()
 
@@ -81,6 +76,14 @@ def SmartSession(*args):
 
 
 class MyBase:
+    id = sa.Column(
+        sa.Integer,
+        primary_key=True,
+        index=True,
+        autoincrement=True,
+        doc="Autoincrementing unique identifier for this dataset",
+    )
+
     created_at = sa.Column(
         sa.DateTime,
         nullable=False,

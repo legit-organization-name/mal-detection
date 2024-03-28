@@ -1,6 +1,6 @@
 from flask import Flask, request, Response
 
-from src.ingress import process_webhook
+from src.ingest import process_webhook
 
 app = Flask(__name__)
 

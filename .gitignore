@@ -6,6 +6,7 @@ __pycache__/
 temp
 # C extensions
 *.so
+data/database.db
 
 # Distribution / packaging
 .Python
